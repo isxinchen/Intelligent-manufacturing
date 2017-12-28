@@ -10,6 +10,7 @@ import xlrd
 from tqdm import tqdm
 from sklearn.linear_model import LinearRegression
 from sklearn import preprocessing
+import os
 
 #### calculate miss values
 def col_miss(train_df):
@@ -54,65 +55,75 @@ def build_model(x_train,y_train):
     return reg_model
 
 if __name__ == '__main__':
-    # read train data
-    print('read train...')
-    train_df = pd.read_excel('train.xlsx')
-    print('train shape:',train_df.shape)
-    # calculate the number of miss values
-    col_missing_df = col_miss(train_df)
-    # del cols of all nan
-    all_nan_columns = col_missing_df[col_missing_df.missing_count==499].\
-                        col.values
-    print('number of all nan col:',len(all_nan_columns))
-    train_df.drop(all_nan_columns,axis=1,inplace=True)
-    print('deleted,and train shape:', train_df.shape)
-    # obtain float cols
-    float64_col = obtain_x(train_df,'float64')
-    print('obtained float cols, and count:',len(float64_col))
-    # del cols that miss number greater than 200
-    miss_float = train_df[float64_col].isnull().sum(axis=0).reset_index()
-    miss_float.columns = ['col','count']
-    miss_float_almost = miss_float[miss_float['count']>200].col.values
-    float64_col = float64_col.tolist()
-    float64_col = [col for col in float64_col if col not in \
-                    miss_float_almost]
-    print('deleted cols that miss number > 200')
-    # del date cols
-    float64_date_col = date_cols(train_df,float64_col)
-    float64_col = [col for col in float64_col if col not in\
-                    float64_date_col]
-    print('deleted date cols, and number of float cols:',len(float64_col))
-    # fill nan
-    print('get float cols data and fill nan...')
-    float_df = train_df[float64_col]
-    float_df.fillna(float_df.median(),inplace=True)
-    print('filled nan')
-    # del cols which unique eq. 1
-    float64_uniq_col = float_uniq(float_df,float64_col)
-    float64_col = [col for col in float64_col if col not in\
-                    float64_uniq_col]
-    print('deleted unique cols, and float cols count:',len(float64_col))
-    # obtained corrcoef greater than 0.2
-    float64_col.remove('Y')
-    y_train = train_df.Y.values
-    corr_df = cal_corrcoef(float_df,y_train,float64_col)
-    corr02 = corr_df[corr_df.corr_value>=0.2]
-    corr02_col = corr02['col'].values.tolist()
-    print('get x_train')
-    x_train = float_df[corr02_col].values
-    print('get test data...')
-    test_df = pd.read_excel('submit_A.xlsx')
-    sub_test = test_df[corr02_col]
-    sub_test.fillna(sub_test.median(),inplace=True)
-    x_test = sub_test.values
-    print('x_train shape:',x_train.shape)
-    print('x_test shape:',x_test.shape)
-    print('build model...')
-    X = np.vstack((x_train,x_test))
-    X = preprocessing.scale(X)
-    x_train = X[0:len(x_train)]
-    x_test = X[len(x_train):]
-    model = build_model(x_train,y_train)
+    if os.path.exists('x_train.npy') is True \
+        and os.path.exists('y_train.npy') is True\
+        and os.path.exists('x_test.npy') is True:
+        x_train = np.load('x_train.npy')
+        y_train = np.load('y_train.npy')
+        x_test = np.load('x_test.npy')
+    else:
+        # read train data
+        print('read train...')
+        train_df = pd.read_excel('train.xlsx')
+        print('train shape:',train_df.shape)
+        # calculate the number of miss values
+        col_missing_df = col_miss(train_df)
+        # del cols of all nan
+        all_nan_columns = col_missing_df[col_missing_df.missing_count==499].\
+                            col.values
+        print('number of all nan col:',len(all_nan_columns))
+        train_df.drop(all_nan_columns,axis=1,inplace=True)
+        print('deleted,and train shape:', train_df.shape)
+        # obtain float cols
+        float64_col = obtain_x(train_df,'float64')
+        print('obtained float cols, and count:',len(float64_col))
+        # del cols that miss number greater than 200
+        miss_float = train_df[float64_col].isnull().sum(axis=0).reset_index()
+        miss_float.columns = ['col','count']
+        miss_float_almost = miss_float[miss_float['count']>200].col.values
+        float64_col = float64_col.tolist()
+        float64_col = [col for col in float64_col if col not in \
+                        miss_float_almost]
+        print('deleted cols that miss number > 200')
+        # del date cols
+        float64_date_col = date_cols(train_df,float64_col)
+        float64_col = [col for col in float64_col if col not in\
+                        float64_date_col]
+        print('deleted date cols, and number of float cols:',len(float64_col))
+        # fill nan
+        print('get float cols data and fill nan...')
+        float_df = train_df[float64_col]
+        float_df.fillna(float_df.median(),inplace=True)
+        print('filled nan')
+        # del cols which unique eq. 1
+        float64_uniq_col = float_uniq(float_df,float64_col)
+        float64_col = [col for col in float64_col if col not in\
+                        float64_uniq_col]
+        print('deleted unique cols, and float cols count:',len(float64_col))
+        # obtained corrcoef greater than 0.2
+        float64_col.remove('Y')
+        y_train = train_df.Y.values
+        corr_df = cal_corrcoef(float_df,y_train,float64_col)
+        corr02 = corr_df[corr_df.corr_value>=0.2]
+        corr02_col = corr02['col'].values.tolist()
+        print('get x_train')
+        x_train = float_df[corr02_col].values
+        print('get test data...')
+        test_df = pd.read_excel('submit_A.xlsx')
+        sub_test = test_df[corr02_col]
+        sub_test.fillna(sub_test.median(),inplace=True)
+        x_test = sub_test.values
+        print('x_train shape:',x_train.shape)
+        print('x_test shape:',x_test.shape)
+        print('build model...')
+        X = np.vstack((x_train,x_test))
+        X = preprocessing.scale(X)
+        x_train = X[0:len(x_train)]
+        x_test = X[len(x_train):]
+        np.save('x_train.npy', x_train)
+        np.save('y_train.npy', y_train)
+        np.save('x_test.npy', x_test)
+    model = build_model(x_train, y_train)
     print('predict and submit...')
     subA = model.predict(x_test)
     # read submit data
