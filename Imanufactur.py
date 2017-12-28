@@ -9,6 +9,8 @@ import pandas as pd
 import xlrd
 from tqdm import tqdm
 from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn import preprocessing
 import os
 
@@ -49,9 +51,21 @@ def cal_corrcoef(float_df,y_train,float_col):
     corr_df = corr_df.sort_values(by='corr_value',ascending=False)
     return corr_df
 
-def build_model(x_train,y_train):
-    reg_model = LinearRegression()
-    reg_model.fit(x_train,y_train)
+def build_model(x,y):
+    # reg_model = LinearRegression()
+    # reg_model.fit(x_train,y_train)
+    reg_model = RandomForestRegressor(n_estimators=50,
+                                      max_features=None)
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
+    mse = cross_val_score(reg_model,
+                          x_train,
+                          y_train,
+                          cv=10,
+                          scoring='neg_mean_squared_error',
+                          n_jobs=4)
+    print(mse)
+    print(mse.mean())
+    # reg_model.fit(x,y)
     return reg_model
 
 if __name__ == '__main__':
@@ -125,8 +139,8 @@ if __name__ == '__main__':
         np.save('x_test.npy', x_test)
     model = build_model(x_train, y_train)
     print('predict and submit...')
-    subA = model.predict(x_test)
+    # subA = model.predict(x_test)
     # read submit data
-    sub_df = pd.read_csv('subA.csv',header=None)
-    sub_df['Y'] = subA
-    sub_df.to_csv('github.csv',header=None,index=False)
+    # sub_df = pd.read_csv('subA.csv',header=None)
+    # sub_df['Y'] = subA
+    # sub_df.to_csv('github.csv',header=None,index=False)
