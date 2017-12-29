@@ -76,35 +76,35 @@ def build_model(x,y):
     # reg_model.fit(x_train,y_train)
     # reg_model = RandomForestRegressor(n_estimators=1000,
     #                                   max_features=None)
-    # reg_model = MLPRegressor(activation='relu',
-    #                          hidden_layer_sizes=(120,100),
-    #                          max_iter=700,
-    #                          alpha=1e-05,
-    #                          batch_size='auto',
-    #                          beta_1=0.9,
-    #                          beta_2=0.999,
-    #                          early_stopping=False,
-    #                          epsilon=1e-08,
-    #                          learning_rate='constant',
-    #                          learning_rate_init=0.001,
-    #                          momentum=0.9,
-    #                          nesterovs_momentum=True,
-    #                          power_t=0.5,
-    #                          random_state=1,
-    #                          shuffle=True,
-    #                          solver='lbfgs',
-    #                          tol=0.0001,
-    #                          validation_fraction=0.1,
-    #                          verbose=False,
-    #                          warm_start=False
-    #                          )
+    reg_model = MLPRegressor(activation='relu',
+                             hidden_layer_sizes=(120,100),
+                             max_iter=700,
+                             alpha=1e-05,
+                             batch_size='auto',
+                             beta_1=0.9,
+                             beta_2=0.999,
+                             early_stopping=False,
+                             epsilon=1e-08,
+                             learning_rate='constant',
+                             learning_rate_init=0.001,
+                             momentum=0.9,
+                             nesterovs_momentum=True,
+                             power_t=0.5,
+                             random_state=1,
+                             shuffle=True,
+                             solver='lbfgs',
+                             tol=0.0001,
+                             validation_fraction=0.1,
+                             verbose=False,
+                             warm_start=False
+                             )
 
-    reg_model = GradientBoostingRegressor(random_state=10)
+    # reg_model = GradientBoostingRegressor(random_state=10)
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3)
     mse = cross_val_score(reg_model,
                           x_train,
                           y_train,
-                          cv=20,
+                          cv=12,
                           scoring='neg_mean_squared_error',
                           n_jobs=8)
     print(mse)
@@ -189,7 +189,9 @@ if __name__ == '__main__':
     # read submit data
     sub_df = pd.read_csv('subA.csv',header=None)
     sub_df['Y'] = subA
-    path = os.environ['HOME'] + '/tianchi/data/'
+    directory = os.environ['HOME'] + '/tianchi/data/'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
     str_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    joblib.dump(model, path + str_time + ".mod")
-    sub_df.to_csv(path + str_time + '-res.csv',header=None,index=False)
+    joblib.dump(model, directory + str_time + ".mod")
+    sub_df.to_csv(directory + str_time + '-res.csv',header=None,index=False)
