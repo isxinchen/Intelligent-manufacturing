@@ -19,8 +19,11 @@ from sklearn import preprocessing
 from sklearn.neural_network import MLPRegressor
 from sklearn.grid_search import GridSearchCV
 from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.ensemble import AdaBoostRegressor
+from sklearn.ensemble import BaggingRegressor
 from sklearn.externals import joblib
-
+from sklearn.svm import SVR
+from sklearn.tree import ExtraTreeRegressor
 
 #### calculate miss values
 def col_miss(train_df):
@@ -74,32 +77,42 @@ def cal_corrcoef(float_df,y_train,float_col):
 def build_model(x,y):
     # reg_model = LinearRegression()
     # reg_model.fit(x_train,y_train)
-    # reg_model = RandomForestRegressor(n_estimators=1000,
-    #                                   max_features=None)
-    # reg_model = MLPRegressor(activation='relu',
-    #                          hidden_layer_sizes=(120,100),
-    #                          max_iter=700,
-    #                          alpha=1e-05,
-    #                          batch_size='auto',
-    #                          beta_1=0.9,
-    #                          beta_2=0.999,
-    #                          early_stopping=False,
-    #                          epsilon=1e-08,
-    #                          learning_rate='constant',
-    #                          learning_rate_init=0.001,
-    #                          momentum=0.9,
-    #                          nesterovs_momentum=True,
-    #                          power_t=0.5,
-    #                          random_state=1,
-    #                          shuffle=True,
-    #                          solver='lbfgs',
-    #                          tol=0.0001,
-    #                          validation_fraction=0.1,
-    #                          verbose=False,
-    #                          warm_start=False
-    #                          )
-
-    reg_model = GradientBoostingRegressor(random_state=10)
+    '''
+    reg_model = RandomForestRegressor(n_estimators=500,
+                                      oob_score = True,
+                                      max_features = "auto",
+                                      min_samples_leaf = 50)
+    '''
+    """
+    reg_model = MLPRegressor(activation='relu',
+                             hidden_layer_sizes=(50,30,20,20,20),
+                             max_iter=700,
+                             alpha=1e-05,
+                             batch_size='auto',
+                             beta_1=0.9,
+                             beta_2=0.999,
+                             early_stopping=False,
+                             epsilon=1e-08,
+                             learning_rate='constant',
+                             learning_rate_init=0.001,
+                             momentum=0.9,
+                             nesterovs_momentum=True,
+                             power_t=0.5,
+                             random_state=1,
+                             shuffle=True,
+                             solver='lbfgs',
+                             tol=0.0001,
+                             validation_fraction=0.1,
+                             verbose=False,
+                             warm_start=False
+                             )
+    """
+    # reg_model = GradientBoostingRegressor(n_estimators=500)
+    reg_model = BaggingRegressor(n_estimators=100,
+                                 base_estimator=RandomForestRegressor(n_estimators=100))
+    # reg_model = ExtraTreeRegressor()
+    # reg_model = SVR()
+    # reg_model = AdaBoostRegressor(n_estimators=500)
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3)
     mse = cross_val_score(reg_model,
                           x_train,
