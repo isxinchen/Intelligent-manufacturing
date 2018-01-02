@@ -76,30 +76,30 @@ def build_model(x,y):
     # reg_model.fit(x_train,y_train)
     # reg_model = RandomForestRegressor(n_estimators=1000,
     #                                   max_features=None)
-    reg_model = MLPRegressor(activation='relu',
-                             hidden_layer_sizes=(120,100),
-                             max_iter=700,
-                             alpha=1e-05,
-                             batch_size='auto',
-                             beta_1=0.9,
-                             beta_2=0.999,
-                             early_stopping=False,
-                             epsilon=1e-08,
-                             learning_rate='constant',
-                             learning_rate_init=0.001,
-                             momentum=0.9,
-                             nesterovs_momentum=True,
-                             power_t=0.5,
-                             random_state=1,
-                             shuffle=True,
-                             solver='lbfgs',
-                             tol=0.0001,
-                             validation_fraction=0.1,
-                             verbose=False,
-                             warm_start=False
-                             )
+    # reg_model = MLPRegressor(activation='relu',
+    #                          hidden_layer_sizes=(120,100),
+    #                          max_iter=700,
+    #                          alpha=1e-05,
+    #                          batch_size='auto',
+    #                          beta_1=0.9,
+    #                          beta_2=0.999,
+    #                          early_stopping=False,
+    #                          epsilon=1e-08,
+    #                          learning_rate='constant',
+    #                          learning_rate_init=0.001,
+    #                          momentum=0.9,
+    #                          nesterovs_momentum=True,
+    #                          power_t=0.5,
+    #                          random_state=1,
+    #                          shuffle=True,
+    #                          solver='lbfgs',
+    #                          tol=0.0001,
+    #                          validation_fraction=0.1,
+    #                          verbose=False,
+    #                          warm_start=False
+    #                          )
 
-    # reg_model = GradientBoostingRegressor(random_state=10)
+    reg_model = GradientBoostingRegressor(random_state=10)
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3)
     mse = cross_val_score(reg_model,
                           x_train,
@@ -113,7 +113,13 @@ def build_model(x,y):
     return reg_model
 
 if __name__ == '__main__':
-    if os.path.exists('x_train.npy') is True \
+    if  os.path.exists('data_train.csv') is True \
+        and os.path.exists('data_testa.csv') is True:
+        data_train = pd.read_csv('data_train.csv')
+        x_train = data_train.iloc[:,:-1].values
+        y_train = data_train.Y.values
+        x_test = pd.read_csv('data_testa.csv').values
+    elif os.path.exists('x_train.npy') is True \
         and os.path.exists('y_train.npy') is True\
         and os.path.exists('x_test.npy') is True:
         x_train = np.load('x_train.npy')
