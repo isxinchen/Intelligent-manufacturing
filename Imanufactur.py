@@ -25,6 +25,7 @@ from sklearn.externals import joblib
 from sklearn.svm import SVR
 from sklearn.tree import ExtraTreeRegressor
 
+
 #### calculate miss values
 def col_miss(train_df):
     col_missing_df = train_df.isnull().sum(axis=0).reset_index()
@@ -108,8 +109,10 @@ def build_model(x,y):
                              )
     """
     # reg_model = GradientBoostingRegressor(n_estimators=500)
-    reg_model = BaggingRegressor(n_estimators=100,
-                                 base_estimator=RandomForestRegressor(n_estimators=100))
+    reg_model = BaggingRegressor(n_estimators=300,
+                                 base_estimator=RandomForestRegressor(n_estimators=300))
+    # reg_model = AdaBoostRegressor(n_estimators=30,
+    #                              base_estimator=RandomForestRegressor(n_estimators=30))
     # reg_model = ExtraTreeRegressor()
     # reg_model = SVR()
     # reg_model = AdaBoostRegressor(n_estimators=500)
