@@ -74,6 +74,18 @@ def date_cols(df):
     date_col = []
     for col in tqdm(df.columns):
         min = df[col].min()
+        if min > 2010010100000000 and min < 2020010100000000:
+            min = min / 100000000
+        if min > 20200000:
+            min = min / 1000000
+        if min > 20000000 and min < 20200000:
+            date_col.append(col)
+    return date_col
+
+def date_cols(df):
+    date_col = []
+    for col in tqdm(df.columns):
+        min = df[col].min()
         if min > 2000000000000000:
             min = min / 100000000
         if min > 20200000:
@@ -83,11 +95,11 @@ def date_cols(df):
     return date_col
 
 
-def get_uniq(df, count):
+def get_uniq(df, min, max):
     uniq_col = []
     for col in tqdm(df.columns):
-        uniq = df[col].unique()
-        if len(uniq) == count:
+        uniq = len(df[col].dropna().unique())
+        if uniq >= min and uniq <= max:
             uniq_col.append(col)
     return uniq_col
 
@@ -175,21 +187,12 @@ if __name__ == '__main__':
         test_df = pd.read_excel('submit_A.xlsx')
         print('train shape:', train_df.shape)
 
-        # 训练集数据删除Y列
-        x_train = train_df.drop(['Y'], axis=1)
-
         # 训练集结果
         y_train = train_df.Y.values
 
         # 训练集数据拼接并删除ID列
-        train_concat = pd.concat([x_train, test_df]).drop(['ID'], axis=1)
-
-        # del cols of all nan
-        # col_missing_df = col_miss(train_concat)
-        # all_nan_columns = col_missing_df[col_missing_df.missing_count >= 599].col.values
-        # print('number of all nan col:', len(all_nan_columns))
-        # train_concat.drop(all_nan_columns, axis=1, inplace=True)
-        # print('deleted,and train_concat shape:', train_concat.shape)
+        train_concat = pd.concat([train_df.drop(['Y'], axis=1), test_df])\
+                         .drop(['ID'], axis=1)
 
         # del cols that miss number greater than 299
         col_missing_df = col_miss(train_concat)
@@ -199,28 +202,32 @@ if __name__ == '__main__':
         print('deleted,and train_concat shape:', train_concat.shape)
 
         # 删除重复列
-        temp = train_concat.select_dtypes(include=['int64', 'float64'])
-        train_concat.drop(get_uniq(temp, 3), axis=1, inplace=True)
+        # temp = train_concat.select_dtypes(include=['int64', 'float64'])
+        # train_concat.drop(get_uniq(temp, 1), axis=1, inplace=True)
+        train_concat.drop(get_uniq(train_concat, 1, 1), axis=1, inplace=True)
 
-        # 处理日期列
+        # 收集离散列
+        temp = train_concat.select_dtypes(exclude=['int64', 'float64']).columns
+        # TODO: 暂且转化成ID值
+        train_concat[temp] = train_concat[temp].apply(lambda x: pd.factorize(x)[0])
+        # train_concat.drop(temp.columns, axis=1, inplace=True)
+        # train_df.filter(float64_date_col).apply(lambda x: x.apply(lambda y: totime(y)))
+
+        # 收集日期列
         temp = train_concat.select_dtypes(include=['int64', 'float64'])
         # TODO: 暂且删除处理
         train_concat.drop(date_cols(temp), axis=1, inplace=True)
-
-        # 处理ID列
-        temp = train_concat.select_dtypes(exclude=['int64', 'float64'])
-        # TODO: 暂且删除处理
-        train_concat.drop(temp.columns, axis=1, inplace=True)
-        # train_df.filter(float64_date_col).apply(lambda x: x.apply(lambda y: totime(y)))
 
         # fill nan
         # print('get float cols data and fill nan...')
         print('filled nan')
         train_concat.apply(lambda x: x.fillna(x.median(), inplace=True))
 
+        train_concat.apply(lambda x: pd.to_numeric(x, downcast='float'), inplace=True)
+
         # 处理过大数据
         # TODO: 暂且删除处理
-        train_concat.drop(large_col(train_concat, 20000000), axis=1, inplace=True)
+        # train_concat.drop(large_col(train_concat, 20000000), axis=1, inplace=True)
 
         # obtained corrcoef greater than 0.2
 
