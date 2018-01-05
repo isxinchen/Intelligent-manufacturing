@@ -244,7 +244,7 @@ if __name__ == '__main__':
         print('x_train shape:', x_train.shape)
         print('x_test shape:', x_test.shape)
         X = np.vstack((x_train, x_test))
-        X = preprocessing.scale(X)
+        # X = preprocessing.scale(X)
         x_train = X[0:len(x_train)]
         x_test = X[len(x_train):]
         np.save('x_train.npy', x_train)
