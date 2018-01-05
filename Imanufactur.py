@@ -117,10 +117,10 @@ def build_model(x, y):
     # reg_model = LinearRegression()
     # reg_model.fit(x_train,y_train)
 
-    reg_model = RandomForestRegressor(n_estimators=500,
-                                      oob_score=True,
-                                      max_features="auto",
-                                      min_samples_leaf=50)
+    # reg_model = RandomForestRegressor(n_estimators=500,
+    #                                   oob_score=True,
+    #                                   max_features="auto",
+    #                                   min_samples_leaf=50)
 
     # reg_model = MLPRegressor(activation='relu',
     #                          hidden_layer_sizes=(50,30,20,20,20),
@@ -146,8 +146,9 @@ def build_model(x, y):
     #                          )
 
     # reg_model = GradientBoostingRegressor(n_estimators=500)
-    # reg_model = BaggingRegressor(n_estimators=30,
-    #                              base_estimator=RandomForestRegressor(n_estimators=30))
+    reg_model = BaggingRegressor(n_estimators=30,
+                                 base_estimator=RandomForestRegressor(n_estimators=30,
+                                                                      min_samples_leaf=50))
     # reg_model = AdaBoostRegressor(n_estimators=30,
     #                              base_estimator=RandomForestRegressor(n_estimators=30))
     # reg_model = ExtraTreeRegressor()
@@ -157,11 +158,12 @@ def build_model(x, y):
     mse = cross_val_score(reg_model,
                           x_train,
                           y_train,
-                          cv=12,
+                          cv=16,
                           scoring='neg_mean_squared_error',
                           n_jobs=8)
     print(mse)
     print(mse.mean())
+    print(mse.std())
     reg_model.fit(x, y)
     return reg_model
 
@@ -242,7 +244,7 @@ if __name__ == '__main__':
         print('x_train shape:', x_train.shape)
         print('x_test shape:', x_test.shape)
         X = np.vstack((x_train, x_test))
-        # X = preprocessing.scale(X)
+        X = preprocessing.scale(X)
         x_train = X[0:len(x_train)]
         x_test = X[len(x_train):]
         np.save('x_train.npy', x_train)
