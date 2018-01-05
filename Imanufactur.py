@@ -221,9 +221,8 @@ if __name__ == '__main__':
         # fill nan
         # print('get float cols data and fill nan...')
         print('filled nan')
-        train_concat.apply(lambda x: x.fillna(x.median(), inplace=True))
-
-        train_concat.apply(lambda x: pd.to_numeric(x, downcast='float'), inplace=True)
+        train_concat = train_concat.apply(lambda x: x.fillna(x.median()))
+        train_concat = train_concat.apply(lambda x: pd.to_numeric(x, downcast='float'))
 
         # 处理过大数据
         # TODO: 暂且删除处理
